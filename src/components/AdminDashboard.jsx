@@ -1,31 +1,77 @@
 import React, { useEffect, useState } from "react";
 
-const backend_url = "https://onlyfans-ai-dashboard-production.up.railway.app";
+const backend_url = process.env.REACT_APP_BACKEND_URL;
 
 function AdminDashboard() {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const [selectedModel, setSelectedModel] = useState("Lana");
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
 
+  // Fetch users with loading and error handling
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
+      setError(null);
       try {
         const response = await fetch(`${backend_url}/users`);
+        if (!response.ok) throw new Error("Failed to fetch users");
         const data = await response.json();
         setUsers(data);
       } catch (error) {
-        console.error("Error fetching users:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUsers();
   }, []);
 
-  const handleSendMessage = () => {
+  // Sanitize input to avoid script injection
+  const sanitizeMessage = (msg) => {
+    const div = document.createElement("div");
+    div.textContent = msg;
+    return div.innerHTML;
+  };
+
+  // Send message and get AI reply from backend
+  const handleSendMessage = async () => {
     if (message.trim() === "") return;
-    const newMessage = { from: "admin", text: message };
+
+    const cleanMessage = sanitizeMessage(message.trim());
+
+    // Append admin message locally
+    const newMessage = { from: "admin", text: cleanMessage };
     setChatHistory((prev) => [...prev, newMessage]);
     setMessage("");
+
+    setChatLoading(true);
+    try {
+      const res = await fetch(`${backend_url}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: selectedModel, message: cleanMessage }),
+      });
+
+      if (!res.ok) throw new Error("Failed to get AI response");
+      const data = await res.json();
+
+      setChatHistory((prev) => [
+        ...prev,
+        { from: selectedModel, text: data.reply || "No response" },
+      ]);
+    } catch (error) {
+      setChatHistory((prev) => [
+        ...prev,
+        { from: "system", text: "Failed to get reply. Please try again." },
+      ]);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   return (
@@ -34,14 +80,18 @@ function AdminDashboard() {
 
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Users</h2>
-        <ul className="bg-white shadow rounded-lg divide-y">
-          {users.map((user) => (
-            <li key={user.id} className="p-4">
-              <span className="font-medium">{user.name}</span>{" "}
-              <span className="text-gray-500">(Joined: {user.joined})</span>
-            </li>
-          ))}
-        </ul>
+        {loading && <p>Loading users...</p>}
+        {error && <p className="text-red-500">Error: {error}</p>}
+        {!loading && !error && (
+          <ul className="bg-white shadow rounded-lg divide-y">
+            {users.map((user) => (
+              <li key={user.id} className="p-4">
+                <span className="font-medium">{user.name}</span>{" "}
+                <span className="text-gray-500">(Joined: {user.joined})</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="mb-8">
@@ -86,9 +136,15 @@ function AdminDashboard() {
 
         <button
           onClick={handleSendMessage}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-6"
+          disabled={message.trim() === "" || chatLoading}
+          aria-disabled={message.trim() === "" || chatLoading}
+          className={`px-4 py-2 rounded mb-6 ${
+            message.trim() === "" || chatLoading
+              ? "bg-blue-300 cursor-not-allowed"
+              : "bg-blue-600 text-white hover:bg-blue-700"
+          }`}
         >
-          Send
+          {chatLoading ? "Sending..." : "Send"}
         </button>
 
         <div>
