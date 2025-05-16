@@ -18,7 +18,6 @@ function AdminDashboard() {
         console.error("Error fetching users:", error);
       }
     };
-
     fetchUsers();
   }, []);
 
@@ -27,62 +26,76 @@ function AdminDashboard() {
     const newMessage = { from: "admin", text: message };
     setChatHistory((prev) => [...prev, newMessage]);
     setMessage("");
-    // Optionally send to backend here
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif" }}>
-      <h1>Admin Dashboard</h1>
+    <div className="p-6 font-sans max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
 
-      {/* Users Section */}
-      <section>
-        <h2>Users</h2>
-        <ul>
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Users</h2>
+        <ul className="bg-white shadow rounded-lg divide-y">
           {users.map((user) => (
-            <li key={user.id}>
-              {user.name} (Joined: {user.joined})
+            <li key={user.id} className="p-4">
+              <span className="font-medium">{user.name}</span>{" "}
+              <span className="text-gray-500">(Joined: {user.joined})</span>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* Analytics */}
-      <section>
-        <h2>Analytics</h2>
-        <p>Tips: 0</p>
-        <p>Messages: 0</p>
+      <section className="mb-8">
+        <h2 className="text-xl font-semibold mb-2">Analytics</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-blue-100 p-4 rounded shadow">
+            <p className="text-sm text-gray-700">Tips</p>
+            <p className="text-2xl font-bold">0</p>
+          </div>
+          <div className="bg-green-100 p-4 rounded shadow">
+            <p className="text-sm text-gray-700">Messages</p>
+            <p className="text-2xl font-bold">0</p>
+          </div>
+        </div>
       </section>
 
-      {/* Chat Section */}
-      <section style={{ marginTop: "2rem" }}>
-        <h2>Chat</h2>
-        <label>
-          Select Model:
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Chat</h2>
+        <div className="mb-4">
+          <label htmlFor="model-select" className="block mb-1 font-medium">
+            Select Model
+          </label>
           <select
+            id="model-select"
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value)}
-            style={{ marginLeft: "1rem" }}
+            className="w-full border border-gray-300 rounded px-3 py-2"
           >
             <option value="Lana">Lana</option>
             <option value="Mia">Mia</option>
             <option value="Chloe">Chloe</option>
           </select>
-        </label>
-        <div style={{ marginTop: "1rem" }}>
-          <textarea
-            rows={3}
-            style={{ width: "100%", marginBottom: "0.5rem" }}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Enter your message"
-          />
-          <button onClick={handleSendMessage}>Send</button>
         </div>
+
+        <textarea
+          rows={3}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Enter your message"
+          className="w-full border border-gray-300 rounded px-3 py-2 mb-2"
+        />
+
+        <button
+          onClick={handleSendMessage}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-6"
+        >
+          Send
+        </button>
+
         <div>
-          <h3>Chat History</h3>
-          <ul>
+          <h3 className="text-lg font-semibold mb-2">Chat History</h3>
+          <ul className="space-y-2">
             {chatHistory.map((msg, index) => (
-              <li key={index}>
+              <li key={index} className="bg-gray-100 p-2 rounded">
                 <strong>{msg.from}:</strong> {msg.text}
               </li>
             ))}
