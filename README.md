@@ -1,3 +1,7 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/this-is-me-123/frontend?utm_source=oss&utm_medium=github&utm_campaign=this-is-me-123%2Ffrontend&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
